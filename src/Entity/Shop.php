@@ -4,10 +4,9 @@ namespace App\Entity;
 
 use App\Repository\ShopRepository;
 use Doctrine\ORM\Mapping as ORM;
-use Symfony\Component\Security\Core\User\UserInterface;
 
 #[ORM\Entity(repositoryClass: ShopRepository::class)]
-class Shop implements UserInterface
+class Shop
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
@@ -15,13 +14,10 @@ class Shop implements UserInterface
     private $id;
 
     #[ORM\Column(type: 'string', length: 255)]
-    private $name;
-
-    #[ORM\Column(type: 'string', length: 255)]
     private $domain;
 
-    #[ORM\Column(type: 'bigint')]
-    private $shopify_id;
+    #[ORM\Column(type: 'string', length: 255, nullable: true)]
+    private $access_token;
 
     #[ORM\Column(type: 'datetime_immutable')]
     private $created_at;
@@ -29,27 +25,12 @@ class Shop implements UserInterface
     #[ORM\Column(type: 'datetime_immutable')]
     private $updated_at;
 
-    #[ORM\Column(type: 'string', length: 255, nullable: true)]
-    private $access_token;
-
-    #[ORM\Column(type: 'json')]
-    private $roles = [];
+    #[ORM\OneToOne(targetEntity: Venue::class, cascade: ['persist', 'remove'])]
+    private $venue;
 
     public function getId(): ?int
     {
         return $this->id;
-    }
-
-    public function getName(): ?string
-    {
-        return $this->name;
-    }
-
-    public function setName(string $name): self
-    {
-        $this->name = $name;
-
-        return $this;
     }
 
     public function getDomain(): ?string
@@ -64,14 +45,14 @@ class Shop implements UserInterface
         return $this;
     }
 
-    public function getShopifyId(): ?string
+    public function getAccessToken(): ?string
     {
-        return $this->shopify_id;
+        return $this->access_token;
     }
 
-    public function setShopifyId(string $shopify_id): self
+    public function setAccessToken(?string $access_token): self
     {
-        $this->shopify_id = $shopify_id;
+        $this->access_token = $access_token;
 
         return $this;
     }
@@ -100,71 +81,15 @@ class Shop implements UserInterface
         return $this;
     }
 
-    public function getAccessToken(): ?string
+    public function getVenue(): ?Venue
     {
-        return $this->access_token;
+        return $this->venue;
     }
 
-    public function setAccessToken(?string $access_token): self
+    public function setVenue(?Venue $venue): self
     {
-        $this->access_token = $access_token;
+        $this->venue = $venue;
 
         return $this;
-    }
-
-    /**
-     * @deprecated since Symfony 5.3, use getUserIdentifier instead
-     */
-    public function getUsername(): string
-    {
-        return (string) $this->shopify_id;
-    }
-
-    /**
-     * @see UserInterface
-     */
-    public function getRoles(): array
-    {
-        $roles = $this->roles;
-        // guarantee every user at least has ROLE_USER
-        $roles[] = 'ROLE_USER';
-
-        return array_unique($roles);
-    }
-
-    public function setRoles(array $roles): self
-    {
-        $this->roles = $roles;
-
-        return $this;
-    }
-
-    /**
-     * This method can be removed in Symfony 6.0 - is not needed for apps that do not check user passwords.
-     *
-     * @see PasswordAuthenticatedUserInterface
-     */
-    public function getPassword(): ?string
-    {
-        return null;
-    }
-
-    /**
-     * This method can be removed in Symfony 6.0 - is not needed for apps that do not check user passwords.
-     *
-     * @see UserInterface
-     */
-    public function getSalt(): ?string
-    {
-        return null;
-    }
-
-    /**
-     * @see UserInterface
-     */
-    public function eraseCredentials()
-    {
-        // If you store any temporary, sensitive data on the user, clear it here
-        // $this->plainPassword = null;
     }
 }
