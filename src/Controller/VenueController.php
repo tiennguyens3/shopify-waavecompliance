@@ -10,6 +10,7 @@ use Symfony\Component\Routing\Annotation\Route;
 use Shopify\Auth\FileSessionStorage;
 use Shopify\Auth\OAuth;
 use Shopify\Context;
+use Shopify\Utils;
 use App\Repository\ShopRepository;
 use App\Repository\VenueRepository;
 use App\Form\VenueType;
@@ -27,13 +28,14 @@ class VenueController extends AbstractController
         $cookies = $request->cookies->all();
         $isOnline = $this->shopifySessionIsOnline();
 
+        $token = isset($cookies['token']) ? $cookies['token'] : '';
+        $headers = ['Authorization' => "Bearer $token"];
+
         try {
-            $cookieSessionId = OAuth::getCurrentSessionId([], $cookies, $isOnline);
+            $session = Utils::loadCurrentSession($headers, $cookies, $isOnline);
         } catch(\Exception $e) {
             return $this->redirectToRoute('app_login', [], Response::HTTP_SEE_OTHER);
         }
-
-        $session = Context::$SESSION_STORAGE->loadSession($cookieSessionId);
 
         $shopDomain = $session->getShop();
         $accessToken = $session->getAccessToken();
@@ -55,6 +57,7 @@ class VenueController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
+            $shop->setVenue($venue);
             $venueRepository->add($venue, true);
 
             return $this->redirectToRoute('app_home', [], Response::HTTP_SEE_OTHER);

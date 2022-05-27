@@ -8,10 +8,12 @@ use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Cookie;
 use Symfony\Component\Routing\Annotation\Route;
+use Shopify\Context;
 use Shopify\Auth\OAuth;
 use Shopify\Auth\OAuthCookie;
 use App\Repository\ShopRepository;
 use App\Entity\Shop;
+use Firebase\JWT\JWT;
 
 class LoginController extends AbstractController
 {
@@ -34,12 +36,17 @@ class LoginController extends AbstractController
                     Cookie::create(
                         $cookie->getName(),
                         $cookie->getValue(),
-                        0
+                        0,
+                        '/',
+                        null,
+                        $cookie->isSecure(),
+                        true,
+                        false,
+                        'None'
                     )
                 );
                 return true;
             });
-
 
             $response->setTargetUrl($url);
 
@@ -58,7 +65,8 @@ class LoginController extends AbstractController
         $cookies = $request->cookies->all();
         $query = $request->query->all();
 
-        $response = new Response();
+        $url = $this->generateUrl('app_home');
+        $response = new RedirectResponse($url);
 
         try {
             $session = OAuth::callback($cookies, $query, function(OAuthCookie $cookie) use ($response) {
@@ -66,7 +74,13 @@ class LoginController extends AbstractController
                     Cookie::create(
                         $cookie->getName(),
                         $cookie->getValue(),
-                        0
+                        0,
+                        '/',
+                        null,
+                        $cookie->isSecure(),
+                        true,
+                        false,
+                        'None'
                     )
                 );
                 return true;
@@ -77,6 +91,7 @@ class LoginController extends AbstractController
 
         $shopDomain = $session->getShop();
         $accessToken = $session->getAccessToken();
+        $accessId = $session->getOnlineAccessInfo()->getId();
 
         $shop = $shopRepository->findOneBy(['domain' => $shopDomain]);
         if (empty($shop)) {
@@ -90,6 +105,26 @@ class LoginController extends AbstractController
 
         $shopRepository->add($shop, true);
 
-        return $this->redirectToRoute('app_home');
+        $payload =[
+            "dest" => $shopDomain,
+            "sub" => $accessId
+        ];
+        $token = JWT::encode($payload, Context::$API_SECRET_KEY);
+
+        $response->headers->setCookie(
+            Cookie::create(
+                'token',
+                $token,
+                0,
+                '/',
+                null,
+                true,
+                true,
+                false,
+                'None'
+            )
+        );
+
+        return $response;
     }
 }
