@@ -8,12 +8,14 @@ use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Cookie;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Messenger\MessageBusInterface;
 use Shopify\Context;
 use Shopify\Auth\OAuth;
 use Shopify\Auth\OAuthCookie;
-use App\Repository\ShopRepository;
-use App\Entity\Shop;
 use Firebase\JWT\JWT;
+use App\Entity\Shop;
+use App\Repository\ShopRepository;
+use App\Message\GetShopifyProducts;
 
 class LoginController extends AbstractController
 {
@@ -57,7 +59,7 @@ class LoginController extends AbstractController
     }
 
     #[Route('/callback', name: 'app_callback')]
-    public function callback(Request $request, ShopRepository $shopRepository): Response
+    public function callback(Request $request, ShopRepository $shopRepository, MessageBusInterface $bus): Response
     {
         $this->shopifyInitialize();
 
@@ -97,6 +99,7 @@ class LoginController extends AbstractController
         if (empty($shop)) {
             $shop = new Shop();
             $shop->setCreatedAt(new \DateTimeImmutable());
+            $flag = true;
         }
 
         $shop->setDomain($shopDomain);
@@ -124,6 +127,10 @@ class LoginController extends AbstractController
                 'None'
             )
         );
+
+        if (isset($flag)) {
+            $bus->dispatch(new GetShopifyProducts($shop->getId()));
+        }
 
         return $response;
     }
