@@ -31,13 +31,13 @@ final class GetShopifyProductsHandler implements MessageHandlerInterface
 
         $client = new Rest($shop->getDomain(), $shop->getAccessToken());
 
-        $this->getCustomCollections($client);
-        $this->getSmartCollections($client);
+        $this->getCustomCollections($shop, $client);
+        $this->getSmartCollections($shop, $client);
 
         $this->entityManager->flush();
     }
 
-    private function getCustomCollections($client)
+    private function getCustomCollections($shop, $client)
     {
         $query = [
             'limit' => 250
@@ -53,11 +53,11 @@ final class GetShopifyProductsHandler implements MessageHandlerInterface
         $collections = $body['custom_collections'];
 
         foreach ($collections as $value) {
-            $this->newCategory($value, $client);
+            $this->newCategory($value, $shop, $client);
         }
     }
 
-    private function getSmartCollections($client)
+    private function getSmartCollections($shop, $client)
     {
         $query = [
             'limit' => 250
@@ -73,22 +73,23 @@ final class GetShopifyProductsHandler implements MessageHandlerInterface
         $collections = $body['smart_collections'];
 
         foreach ($collections as $value) {
-            $this->newCategory($value, $client);
+            $this->newCategory($value, $shop, $client);
         }
     }
 
-    private function newCategory($data, $client)
+    private function newCategory($data, $shop, $client)
     {
         $category = new Category();
+        $category->setShopId($shop->getId());
         $category->setShopifyId($data['id']);
         $category->setName($data['title']);
         $category->setCreatedAt(new \DateTimeImmutable());
 
-        $this->addProducts($category, $client);
+        $this->addProducts($category, $shop, $client);
         $this->entityManager->persist($category);
     }
 
-    private function addProducts($category, $client)
+    private function addProducts($category, $shop, $client)
     {
         $query = [
             'limit' => 250,
@@ -109,12 +110,23 @@ final class GetShopifyProductsHandler implements MessageHandlerInterface
                 $price = $value['variants'][0]['price'];
             }
 
-            $product = new Product();
-            $product->setShopifyId($value['id']);
+            $shopifyId = $value['id'];
+            $product = $this->entityManager->findOneBy([
+                'shopify_id' => $shopifyId
+            ]);
+
+            if (empty($product)) {
+                $product = new Product();
+                $product->setShopId($shop->getId());
+                $product->setCreatedAt(new \DateTimeImmutable());
+            }
+
+            $product->setShopifyId($shopifyId);
             $product->setName($value['title']);
             $product->setPrice($price);
             $product->setUrl($value['handle']);
-            $product->setCreatedAt(new \DateTimeImmutable());
+            $product->setUpdatedAt(new \DateTimeImmutable());
+
             $product->addCategory($category);
             $category->addProduct($product);
         }

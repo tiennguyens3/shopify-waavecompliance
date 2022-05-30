@@ -130,6 +130,14 @@ class LoginController extends AbstractController
 
         if (isset($flag)) {
             $bus->dispatch(new GetShopifyProducts($shop->getId()));
+
+            $parameters = [
+                'shop_id' => $shop->getId()
+            ];
+            $categoryUrl = $this->generateUrl('app_category_shopify', $parameters, 0);
+            $productUrl = $this->generateUrl('app_product_shopify', $parameters, 0);
+
+            $bus->dispatch(new AddShopifyHooks($shop->getId(), $categoryUrl, $productUrl));
         }
 
         return $response;

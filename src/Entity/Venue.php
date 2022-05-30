@@ -16,6 +16,9 @@ class Venue
     private $id;
 
     #[ORM\Column(type: 'integer')]
+    private $shop_id;
+
+    #[ORM\Column(type: 'integer')]
     private $venue_id;
 
     #[ORM\Column(type: 'string', length: 255)]
@@ -37,6 +40,18 @@ class Venue
     public function getId(): ?int
     {
         return $this->id;
+    }
+
+    public function getShopId(): ?int
+    {
+        return $this->shop_id;
+    }
+
+    public function setShopId(int $shop_id): self
+    {
+        $this->shop_id = $shop_id;
+
+        return $this;
     }
 
     public function getVenueId(): ?int
