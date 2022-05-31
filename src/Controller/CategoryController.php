@@ -40,7 +40,7 @@ class CategoryController extends AbstractController
 
         if (empty($category)) {
             $category = new Category();
-            $category->setShopId($shopId);
+            $category->setShop($shop);
             $category->setCreatedAt($date);
         }
 
@@ -82,6 +82,7 @@ class CategoryController extends AbstractController
                 $product->setCreatedAt(new \DateTimeImmutable());
             }
 
+            $product->setShop($shop);
             $product->setShopifyId($shopifyId);
             $product->setName($value['title']);
             $product->setPrice($price);

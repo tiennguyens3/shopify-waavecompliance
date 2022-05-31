@@ -17,9 +17,6 @@ class Category
     #[ORM\Column(type: 'integer')]
     private $id;
 
-    #[ORM\Column(type: 'integer')]
-    private $shop_id;
-
     #[ORM\Column(type: 'bigint')]
     private $shopify_id;
 
@@ -35,6 +32,9 @@ class Category
     #[ORM\ManyToMany(targetEntity: Product::class, mappedBy: 'categories', cascade: ['persist'])]
     private $products;
 
+    #[ORM\ManyToOne(targetEntity: Shop::class, inversedBy: 'categories')]
+    private $shop;
+
     public function __construct()
     {
         $this->products = new ArrayCollection();
@@ -43,18 +43,6 @@ class Category
     public function getId(): ?int
     {
         return $this->id;
-    }
-
-    public function getShopId(): ?int
-    {
-        return $this->shop_id;
-    }
-
-    public function setShopId(int $shop_id): self
-    {
-        $this->shop_id = $shop_id;
-
-        return $this;
     }
 
     public function getShopifyId(): ?string
@@ -128,6 +116,18 @@ class Category
         if ($this->products->removeElement($product)) {
             $product->removeCategory($this);
         }
+
+        return $this;
+    }
+
+    public function getShop(): ?Shop
+    {
+        return $this->shop;
+    }
+
+    public function setShop(?Shop $shop): self
+    {
+        $this->shop = $shop;
 
         return $this;
     }

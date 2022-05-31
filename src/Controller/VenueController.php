@@ -57,7 +57,7 @@ class VenueController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $shop->setVenue($venue);
+            $venue->setShop($shop);
             $venueRepository->add($venue, true);
 
             return $this->redirectToRoute('app_home', [], Response::HTTP_SEE_OTHER);

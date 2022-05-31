@@ -3,6 +3,8 @@
 namespace App\Entity;
 
 use App\Repository\ShopRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: ShopRepository::class)]
@@ -25,8 +27,20 @@ class Shop
     #[ORM\Column(type: 'datetime_immutable')]
     private $updated_at;
 
-    #[ORM\OneToOne(targetEntity: Venue::class, cascade: ['persist', 'remove'])]
+    #[ORM\OneToOne(mappedBy: 'shop', targetEntity: Venue::class)]
     private $venue;
+
+    #[ORM\OneToMany(mappedBy: 'shop', targetEntity: Product::class)]
+    private $products;
+
+    #[ORM\OneToMany(mappedBy: 'shop', targetEntity: Category::class)]
+    private $categories;
+
+    public function __construct()
+    {
+        $this->products = new ArrayCollection();
+        $this->categories = new ArrayCollection();
+    }
 
     public function getId(): ?int
     {
@@ -89,6 +103,66 @@ class Shop
     public function setVenue(?Venue $venue): self
     {
         $this->venue = $venue;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Product>
+     */
+    public function getProducts(): Collection
+    {
+        return $this->products;
+    }
+
+    public function addProduct(Product $product): self
+    {
+        if (!$this->products->contains($product)) {
+            $this->products[] = $product;
+            $product->setShop($this);
+        }
+
+        return $this;
+    }
+
+    public function removeProduct(Product $product): self
+    {
+        if ($this->products->removeElement($product)) {
+            // set the owning side to null (unless already changed)
+            if ($product->getShop() === $this) {
+                $product->setShop(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Category>
+     */
+    public function getCategories(): Collection
+    {
+        return $this->categories;
+    }
+
+    public function addCategory(Category $category): self
+    {
+        if (!$this->categories->contains($category)) {
+            $this->categories[] = $category;
+            $category->setShop($this);
+        }
+
+        return $this;
+    }
+
+    public function removeCategory(Category $category): self
+    {
+        if ($this->categories->removeElement($category)) {
+            // set the owning side to null (unless already changed)
+            if ($category->getShop() === $this) {
+                $category->setShop(null);
+            }
+        }
 
         return $this;
     }

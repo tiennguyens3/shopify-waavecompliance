@@ -16,7 +16,8 @@ class ProductController extends AbstractController
     public function index(Request $request, ProductRepository $productRepository): JsonResponse
     {
         $shopId = $request->get('shop_id');
-        if (empty($shopId)) {
+        $shop = $shopRepository->find($shopId);
+        if (empty($shop)) {
             return $this->json([]);
         }
 
@@ -42,7 +43,7 @@ class ProductController extends AbstractController
             $product->setCreatedAt($date);
         }
 
-        $product->setShopId($shopId);
+        $product->setShop($shop);
         $product->setShopifyId($shopifyId);
         $product->setName($data['title']);
         $product->setPrice($price);
