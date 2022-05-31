@@ -4,9 +4,14 @@
 
 {% block body %}
 
-<form method="POST">
-  <input type="text" id="shop" name="shop" />
-  <button type="submit">Login</button>
-</form>
+<div class="container mt-5">
+  <form method="POST">
+    <div class="mb-3">
+      <label class="form-label">Domain</lable>
+      <input type="text" class="form-control" placeholder="your-domain" id="shop" name="shop" />
+    </div>
+    <button type="submit" class="btn btn-primary">Login</button>
+  </form>
+</div>
 
 {% endblock %}

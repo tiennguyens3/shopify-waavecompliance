@@ -3,8 +3,32 @@
 {% block title %}Hello HomeController!{% endblock %}
 
 {% block body %}
-{{ form_start(form) }}
-    {{ form_widget(form) }}
-    <button class="btn">{{ button_label|default('Save') }}</button>
-{{ form_end(form) }}
+
+<div class="container mt-5">
+    <div class="alert alert-success d-none" role="alert">
+      Update successfully.
+    </div>
+
+    {{ form_start(form) }}
+        {{ form_widget(form) }}
+        <button class="btn btn-primary">{{ button_label|default('Save') }}</button>
+    {{ form_end(form) }}
+</div>
+
+<script type="text/javascript">
+    $('form').submit(function(event) {
+        event.preventDefault();
+
+        let data = $(this).serialize();
+        $.ajax({
+            url: $(this).attr('action'),
+            method: 'POST',
+            data: data,
+            success: function() {
+                $('.alert').removeClass('d-none');
+            }
+        })
+    })
+</script>
+
 {% endblock %}

@@ -83,7 +83,7 @@ class VenueController extends AbstractController
             } catch(\Exception $e) {
             }
 
-            return $this->redirectToRoute('app_home', [], Response::HTTP_SEE_OTHER);
+            return $this->json([]);
         }
 
         return $this->render('venue/index.html.twig', [
