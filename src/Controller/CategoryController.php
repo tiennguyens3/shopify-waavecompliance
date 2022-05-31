@@ -51,6 +51,7 @@ class CategoryController extends AbstractController
         $categoryRepository->add($category, true);
 
         // Update product category
+
         $this->shopifyInitialize();
         $client = new Rest($shop->getDomain(), $shop->getAccessToken());
         $query = [

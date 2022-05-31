@@ -3,7 +3,10 @@
 namespace App\Controller;
 
 use App\Entity\Product;
+use App\Repository\ShopRepository;
 use App\Repository\ProductRepository;
+use App\Repository\CategoryRepository;
+use Shopify\Clients\Rest;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -12,8 +15,10 @@ use Symfony\Component\Routing\Annotation\Route;
 #[Route('/product')]
 class ProductController extends AbstractController
 {
+    use ShopifyTrait;
+
     #[Route('/shopify', name: 'app_product_shopify')]
-    public function index(Request $request, ProductRepository $productRepository): JsonResponse
+    public function index(Request $request, ProductRepository $productRepository, ShopRepository $shopRepository, CategoryRepository $categoryRepository): JsonResponse
     {
         $shopId = $request->get('shop_id');
         $shop = $shopRepository->find($shopId);
@@ -49,6 +54,49 @@ class ProductController extends AbstractController
         $product->setPrice($price);
         $product->setUrl($data['handle']);
         $product->setUpdatedAt($date);
+
+        // Get categories of this product
+
+        $this->shopifyInitialize();
+        $client = new Rest($shop->getDomain(), $shop->getAccessToken());
+
+        // Custom collections
+        $query = [
+            'product_id' => $shopifyId
+        ];
+        $response = $client->get('custom_collections', [], $query);
+
+        $body = $response->getDecodedBody();
+        if ($body) {
+            $collections = $body['custom_collections'];
+            foreach ($collections as $value) {
+                $category = $categoryRepository->findOneBy(['shopify_id' => $value['id']]);
+                if (empty($category)) {
+                    continue;
+                }
+
+                $product->addCategory($category);
+            }
+        }
+
+        // Smart collections
+        $query = [
+            'product_id' => $shopifyId
+        ];
+        $response = $client->get('smart_collections', [], $query);
+
+        $body = $response->getDecodedBody();
+        if ($body) {
+            $collections = $body['smart_collections'];
+            foreach ($collections as $value) {
+                $category = $categoryRepository->findOneBy(['shopify_id' => $value['id']]);
+                if (empty($category)) {
+                    continue;
+                }
+
+                $product->addCategory($category);
+            }
+        }
 
         $productRepository->add($product, true);
 
