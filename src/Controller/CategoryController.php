@@ -100,4 +100,24 @@ class CategoryController extends AbstractController
             'success' => true
         ]);
     }
+
+    #[Route('/{shopId}', name: 'app_category_index')]
+    public function index(Request $request, $shopId, ShopRepository $shopRepository)
+    {
+        $shop = $shopRepository->find($shopId);
+        if (empty($shop)) {
+            return $this->json([]);
+        }
+
+        $data = [];
+        $categories = $shop->getCategories()->toArray();
+        foreach ($categories as $value) {
+            $data[] = [
+                'id' => $value->getId(),
+                'name' => $value->getName()
+            ];
+        }
+
+        return $this->json($data);
+    }
 }

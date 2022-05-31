@@ -18,7 +18,7 @@ class ProductController extends AbstractController
     use ShopifyTrait;
 
     #[Route('/shopify', name: 'app_product_shopify')]
-    public function index(Request $request, ProductRepository $productRepository, ShopRepository $shopRepository, CategoryRepository $categoryRepository): JsonResponse
+    public function new(Request $request, ProductRepository $productRepository, ShopRepository $shopRepository, CategoryRepository $categoryRepository): JsonResponse
     {
         $shopId = $request->get('shop_id');
         $shop = $shopRepository->find($shopId);
@@ -103,5 +103,53 @@ class ProductController extends AbstractController
         return $this->json([
             'success' => true
         ]);
+    }
+
+    #[Route('/{shopId}')]
+    public function index(Request $request, $shopId, ShopRepository $shopRepository)
+    {
+        $shop = $shopRepository->find($shopId);
+        if (empty($shop)) {
+            return $this->json([]);
+        }
+
+        $data = [];
+        $products = $shop->getProducts();
+
+        $after = $request->get('after');
+        if ($after) {
+            $date = new \DateTimeImmutable($after);
+            $products = $products->filter(function($product) use ($date) {
+                return $product->getUpdatedAt() >= $date;
+            });
+        }
+
+        foreach ($products as $value) {
+            $categories = [];
+            foreach ($value->getCategories() as $category) {
+                $categories[] = [
+                    'id' => $category->getId(),
+                    'name' => $category->getName()
+                ];
+            }
+
+            $data[] = [
+                'id' => $value->getId(),
+                'name' => $value->getName(),
+                'sku' => $value->getSku(),
+                'price' => $value->getPrice(),
+                'permalink' => $this->buildProductUrl($shop, $value->getUrl()),
+                'categories' => $categories
+            ];
+        }
+
+        return $this->json($data);
+    }
+
+    private function buildProductUrl($shop, $url)
+    {
+        $domain = trim($shop->getDomain(), '/');
+
+        return 'https://' . $domain . '/products/' . trim($url, '/');
     }
 }

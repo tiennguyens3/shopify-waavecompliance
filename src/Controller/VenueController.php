@@ -7,6 +7,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Cookie;
 use Symfony\Component\Routing\Annotation\Route;
+use GuzzleHttp\Client;
 use Shopify\Auth\FileSessionStorage;
 use Shopify\Auth\OAuth;
 use Shopify\Context;
@@ -60,11 +61,41 @@ class VenueController extends AbstractController
             $venue->setShop($shop);
             $venueRepository->add($venue, true);
 
+            // Call WAAVE API to update merchant compliance
+            $categoryUrl = $this->generateUrl('app_category_index', ['shopId' => $shop->getId()], 0);
+            $productUrl = $this->generateUrl('app_product_index', ['shopId' => $shop->getId()], 0);
+            $pingUrl = $this->generateUrl('app_home_ping', [], 0);
+
+            $client = new Client();
+            $options = [
+                'json' => [
+                    'venue_id' => $venue->getVenueId(),
+                    'password' => $venue->getPassword(),
+                    'version' => '1.0.0',
+                    'ping_url' => $pingUrl,
+                    'category_url' => $categoryUrl,
+                    'menu_item_url' => $productUrl
+                ]
+            ];
+
+            try {
+                $client->post($_ENV['WAAVE_API_URL'], $options);
+            } catch(\Exception $e) {
+            }
+
             return $this->redirectToRoute('app_home', [], Response::HTTP_SEE_OTHER);
         }
 
         return $this->render('venue/index.html.twig', [
             'form' => $form->createView()
+        ]);
+    }
+
+    #[Route('/ping', name: 'app_home_ping')]
+    public function show()
+    {
+        return $this->json([
+            'version' => '1.0.0'
         ]);
     }
 }
