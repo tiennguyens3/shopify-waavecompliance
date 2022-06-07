@@ -80,7 +80,7 @@ final class GetShopifyProductsHandler implements MessageHandlerInterface
     private function newCategory($data, $shop, $client)
     {
         $category = new Category();
-        $category->setShopId($shop->getId());
+        $category->setShop($shop);
         $category->setShopifyId($data['id']);
         $category->setName($data['title']);
         $category->setCreatedAt(new \DateTimeImmutable());
@@ -111,13 +111,13 @@ final class GetShopifyProductsHandler implements MessageHandlerInterface
             }
 
             $shopifyId = $value['id'];
-            $product = $this->entityManager->findOneBy([
+            $product = $this->entityManager->getRepository(Product::class)->findOneBy([
                 'shopify_id' => $shopifyId
             ]);
 
             if (empty($product)) {
                 $product = new Product();
-                $product->setShopId($shop->getId());
+                $product->setShop($shop);
                 $product->setCreatedAt(new \DateTimeImmutable());
             }
 

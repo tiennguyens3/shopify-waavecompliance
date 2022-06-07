@@ -39,8 +39,6 @@ class VenueController extends AbstractController
         }
 
         $shopDomain = $session->getShop();
-        $accessToken = $session->getAccessToken();
-
         $shop = $shopRepository->findOneBy(['domain' => $shopDomain]);
         if (empty($shop)) {
             return $this->redirectToRoute('app_login', [], Response::HTTP_SEE_OTHER);

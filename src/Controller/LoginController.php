@@ -16,6 +16,8 @@ use Firebase\JWT\JWT;
 use App\Entity\Shop;
 use App\Repository\ShopRepository;
 use App\Message\GetShopifyProducts;
+use App\Message\AddShopifyHooks;
+
 
 class LoginController extends AbstractController
 {
