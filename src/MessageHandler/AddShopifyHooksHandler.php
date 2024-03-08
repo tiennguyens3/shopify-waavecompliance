@@ -44,7 +44,7 @@ final class AddShopifyHooksHandler implements MessageHandlerInterface
                 ]
             ];
 
-            //$client->post('webhook', $body);
+            $client->post('webhook', $body);
         }
     }
 }

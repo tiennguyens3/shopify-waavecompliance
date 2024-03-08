@@ -112,6 +112,7 @@ final class GetShopifyProductsHandler implements MessageHandlerInterface
 
             $shopifyId = $value['id'];
             $product = $this->entityManager->getRepository(Product::class)->findOneBy([
+                'shop' => $shop,
                 'shopify_id' => $shopifyId
             ]);
 
