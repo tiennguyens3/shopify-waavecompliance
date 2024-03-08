@@ -1,13 +1,12 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Hello HomeController!{% endblock %}
+{% block title %}WAAVE Compliance{% endblock %}
 
 {% block body %}
 
 <div class="container mt-5">
-    <div class="alert alert-success d-none" role="alert">
-      Update successfully.
-    </div>
+    <div class="alert alert-danger d-none" role="alert"></div>
+    <div class="alert alert-success d-none" role="alert">Update successfully.</div>
 
     {{ form_start(form) }}
         {{ form_widget(form) }}
@@ -19,13 +18,20 @@
     $('form').submit(function(event) {
         event.preventDefault();
 
+        $('.alert').addClass('d-none');
+
         let data = $(this).serialize();
         $.ajax({
             url: $(this).attr('action'),
             method: 'POST',
             data: data,
-            success: function() {
-                $('.alert').removeClass('d-none');
+            success: function(data) {
+                if (data.message) {
+                    $('.alert-danger').removeClass('d-none')
+                        .text(data.message);
+                } else {
+                    $('.alert-success').removeClass('d-none');
+                }
             }
         })
     })

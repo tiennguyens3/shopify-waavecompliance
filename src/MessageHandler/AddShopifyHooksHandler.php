@@ -36,8 +36,6 @@ final class AddShopifyHooksHandler implements MessageHandlerInterface
             'products/update' => $message->getProductUrl()
         ];
 
-        dump($hooks);die;
-
         foreach ($hooks as $key => $value) {
             $body = [
                 'webhook' => [

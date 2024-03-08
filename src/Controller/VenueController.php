@@ -77,7 +77,12 @@ class VenueController extends AbstractController
             ];
 
             try {
-                $client->post($_ENV['WAAVE_API_URL'], $options);
+                $response = $client->post($_ENV['WAAVE_API_URL'], $options);
+
+                $body = json_decode($response->getBody(), true);
+                if (!empty($body['message'])) {
+                    return $this->json(['message' => $body['message']]);
+                }
             } catch(\Exception $e) {
             }
 
