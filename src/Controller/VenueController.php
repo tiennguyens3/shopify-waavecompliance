@@ -77,13 +77,9 @@ class VenueController extends AbstractController
             ];
 
             try {
-                $response = $client->post($_ENV['WAAVE_API_URL'], $options);
-
-                $body = json_decode($response->getBody(), true);
-                if (!empty($body['message'])) {
-                    return $this->json(['message' => $body['message']]);
-                }
+                $client->post($_ENV['WAAVE_API_URL'], $options);
             } catch(\Exception $e) {
+                return $this->json(['message' => 'Venue ID does not match!']);
             }
 
             return $this->json([]);

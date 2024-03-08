@@ -14,7 +14,6 @@ class VenueType extends AbstractType
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder
-            ->add('access_key', TextType::class, ['label' => 'Access Key'])
             ->add('venue_id', TextType::class, ['label' => 'Venue ID'])
             ->add('password', PasswordType::class)
         ;
