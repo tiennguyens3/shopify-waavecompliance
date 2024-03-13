@@ -134,12 +134,11 @@ class LoginController extends AbstractController
             $bus->dispatch(new GetShopifyProducts($shop->getId()));
 
             $parameters = [
-                'shop_id' => $shop->getId()
+                'shopId' => $shop->getId()
             ];
-            $categoryUrl = $this->generateUrl('app_category_shopify', $parameters, 0);
-            $productUrl = $this->generateUrl('app_product_shopify', $parameters, 0);
+            $webhookUrl = $this->generateUrl('app_webhook_callback', $parameters);
 
-            $bus->dispatch(new AddShopifyHooks($shop->getId(), $categoryUrl, $productUrl));
+            $bus->dispatch(new AddShopifyHooks($shop->getId(), $webhookUrl));
         }
 
         return $response;

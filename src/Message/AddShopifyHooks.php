@@ -11,15 +11,12 @@ final class AddShopifyHooks
 
     private $shopId;
 
-    private $categoryUrl;
+    private $webhookUrl;
 
-    private $productUrl;
-
-    public function __construct(int $shopId, string $categoryUrl, string $productUrl)
+    public function __construct(int $shopId, string $webhookUrl)
     {
         $this->shopId = $shopId;
-        $this->categoryUrl = $categoryUrl;
-        $this->productUrl = $productUrl;
+        $this->webhookUrl = $webhookUrl;
     }
 
     public function getShopId(): int
@@ -27,13 +24,8 @@ final class AddShopifyHooks
        return $this->shopId;
     }
 
-    public function getCategoryUrl(): string
+    public function getWebhookUrl(): string
     {
-       return $this->categoryUrl;
-    }
-
-    public function getProductUrl(): string
-    {
-       return $this->productUrl;
+       return $this->webhookUrl;
     }
 }

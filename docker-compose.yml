@@ -2,7 +2,7 @@ version: '3.9'
 
 services:
   php:
-    image: symfony/shopify/waavecompliance
+    build: .
     volumes:
       - ".:/app"
       - "./php.ini:/usr/local/etc/php/php.ini"

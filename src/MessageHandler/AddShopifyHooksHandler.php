@@ -2,49 +2,45 @@
 
 namespace App\MessageHandler;
 
-use App\Entity\Shop;
 use App\Message\AddShopifyHooks;
-use Shopify\Clients\Rest;
-use Doctrine\Persistence\ManagerRegistry;
+use App\Repository\ShopRepository;
+use Shopify\Webhooks\Topics;
+use Shopify\Webhooks\Registry;
 use Symfony\Component\Messenger\Handler\MessageHandlerInterface;
 
 final class AddShopifyHooksHandler implements MessageHandlerInterface
 {
-    private $entityManager;
+    private $shopRepository;
 
-    public function __construct(ManagerRegistry $doctrine)
+    public function __construct(ShopRepository $shopRepository)
     {
-        $this->entityManager = $doctrine->getManager();
+        $this->shopRepository = $shopRepository;
     }
 
     public function __invoke(AddShopifyHooks $message)
     {
         $shopId = $message->getShopId();
-
-        $shop = $this->entityManager->getRepository(Shop::class)->find($shopId);
-
+        $shop = $this->shopRepository->find($shopId);
         if (empty($shop)) {
             return;
         }
 
-        $client = new Rest($shop->getDomain(), $shop->getAccessToken());
+        $webhookUrl = $message->getWebhookUrl();
 
-        $hooks = [
-            'collections/create' => $message->getCategoryUrl(),
-            'collections/update' => $message->getCategoryUrl(),
-            'products/create' => $message->getProductUrl(),
-            'products/update' => $message->getProductUrl()
+        $topics = [
+            Topics::COLLECTIONS_CREATE,
+            Topics::COLLECTIONS_UPDATE,
+            Topics::PRODUCTS_CREATE,
+            Topics::PRODUCTS_UPDATE
         ];
 
-        foreach ($hooks as $key => $value) {
-            $body = [
-                'webhook' => [
-                    'topic' => $key,
-                    'address' => $value
-                ]
-            ];
-
-            $client->post('webhook', $body);
+        foreach ($topics as $topic) {
+            Registry::register(
+                $webhookUrl,
+                $topic,
+                $shop->getDomain(),
+                $shop->getAccessToken()
+            );
         }
     }
 }
